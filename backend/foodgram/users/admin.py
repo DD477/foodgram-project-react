@@ -24,3 +24,4 @@ class UserAdmin(admin.ModelAdmin):
         'username',
         'email',
     )
+
