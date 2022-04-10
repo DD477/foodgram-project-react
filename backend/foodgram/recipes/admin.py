@@ -1,71 +1,43 @@
 from django.contrib import admin
 
-from .models import Recipe, ShoppingCart, Favorite, Subscription, Ingredient, Tag
-
-
-@admin.register(Recipe)
-class RecipeAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'name',
-        'text',
-        'author',
-        'get_tags',
-        'image',
-        'cooking_time',
-        'get_ingredients',
-    )
-
-    filter_horizontal = ('tags', 'ingredients',)
-
-    def get_tags(self, obj):
-        return ", ".join([str(t)] for t in obj.tags.all())
-
-    def get_ingredients(self, obj):
-        return ", ".join([str(i)] for i in obj.ingredients.all())
+from .models import (Favorite, Ingredient, Recipe, ShoppingCart, Subscription,
+                     Tag)
 
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'user',
-    )
+    list_display = ('id', 'user')
     filter_horizontal = ('recipe',)
 
 
 @admin.register(Favorite)
-class FavoriteCartAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'user',
-    )
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user')
     filter_horizontal = ('recipe',)
 
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'user',
-        'author',
-    )
+    list_display = ('id', 'user', 'author')
+    list_editable = ('user', 'author')
+
+
+@admin.register(Recipe)
+class RecipeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'author', 'name', 'image', 'text', 'cooking_time')
+    filter_horizontal = ('tags', 'ingredients')
+    list_filter = ('author', 'name')
+    list_editable = ('author', 'name', 'image', 'text', 'cooking_time')
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'name',
-        'measurement_unit',
-    )
+    list_display = ('id', 'name', 'measurement_unit')
+    list_filter = ('name',)
+    list_editable = ('name', 'measurement_unit')
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'name',
-        'color',
-        'slug',
-    )
+    list_display = ('id', 'name', 'color', 'slug')
+    list_editable = ('name', 'color', 'slug')

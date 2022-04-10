@@ -1,74 +1,73 @@
 from django.db import models
 
-from django.contrib.auth import get_user_model
-
-CustomUser = get_user_model()
+from users.models import User
 
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
-        CustomUser,
-        related_name='shopping_carts',
-        verbose_name='Пользователь',
+        User,
         on_delete=models.CASCADE,
+        related_name='shopping_carts',
+        verbose_name='Чей список покупок'
     )
-    recipe =  models.ManyToManyField(
+    recipe = models.ManyToManyField(
         "Recipe",
         related_name='shopping_carts',
-        verbose_name='id рецепта',
+        verbose_name='ID рецепта'
     )
 
-    # def get_list(self):
-    #     return ", ".join(str(l) for l in self.recipe.all())
-    # get_list.__name__ = 'Рецепты'
-
-    # def __str__(self):
-    #     return str(self.get_list())
-
     class Meta:
-        ordering = ['id']
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        ordering = ['id']
+
+    def __str__(self) -> str:
+        return ' / '.join(i.name for i in self.recipe.all())
 
 
 class Favorite(models.Model):
     user = models.ForeignKey(
-        CustomUser,
-        related_name='favorites',
-        verbose_name='Пользователь',
+        User,
         on_delete=models.CASCADE,
+        related_name='favorites',
+        verbose_name='Чей список избранного'
     )
-    recipe =  models.ManyToManyField(
+    recipe = models.ManyToManyField(
         "Recipe",
         related_name='favorites',
-        verbose_name='id рецепта',
+        verbose_name='ID рецепта'
     )
 
-    # def __str__(self):
-    #     return self.name
-
     class Meta:
-        ordering = ['id']
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
+        ordering = ['id']
+
+    def __str__(self) -> str:
+        return ' / '.join(i.name for i in self.recipe.all())
 
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
-        related_name='followers'
+        related_name='followers',
+        verbose_name='Подписчик'
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
-        related_name='followings'
+        related_name='followings',
+        verbose_name='Автор'
     )
 
     class Meta:
-        ordering = ['id']
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        ordering = ['id']
+
+    # def __str__(self) -> str:
+    #     return self.user.username + ' подписался на ' + self.author.username
 
 
 class Recipe(models.Model):
@@ -78,84 +77,80 @@ class Recipe(models.Model):
         verbose_name='Тег'
     )
     author = models.ForeignKey(
-        CustomUser,
-        related_name='recipes',
-        verbose_name='Автор',
+        User,
         on_delete=models.CASCADE,
+        related_name='recipes',
+        verbose_name='Автор'
     )
     ingredients = models.ManyToManyField(
         "Ingredient",
         related_name='recipes',
-        verbose_name='Ингредиенты'
+        verbose_name='Ингредиент'
     )
-    # is_favorited =
-    # is_in_shopping_cart =
     name = models.CharField(
         verbose_name='Название рецепта',
-        max_length=200,
+        max_length=200
     )
-
     image = models.ImageField(
-        upload_to='posts/',
-        verbose_name = 'Картинка',
+        verbose_name='Картинка рецепта',
+        upload_to='media/recipes/images/'
     )
     text = models.TextField(
-        verbose_name='Описание рецепта',
-        max_length=2000,
+        verbose_name='Текст рецепта'
     )
     cooking_time = models.IntegerField(
-        verbose_name='Время готовки'
+        verbose_name='Время приготовления'
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
-        ordering = ['id']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ['id']
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название ингредиента',
-        max_length=200,
+        max_length=200
     )
     measurement_unit = models.CharField(
-        verbose_name='Единицы измерения',
-        max_length=200,
+        verbose_name='Единца измерения',
+        max_length=200
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
-        ordering = ['id']
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        ordering = ['id']
+
+    def __str__(self) -> str:
+        return self.name + ', ' + self.measurement_unit
 
 
 class Tag(models.Model):
     name = models.CharField(
         verbose_name='Название тега',
         max_length=200,
-        unique=True,
+        unique=True
     )
     color = models.CharField(
         verbose_name='Цвет в HEX',
         max_length=7,
-        unique=True,
+        unique=True
     )
     slug = models.CharField(
-        verbose_name='Слаг тега',
+        verbose_name='Cлаг',
         max_length=200,
-        unique=True,
+        unique=True
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
-        ordering = ['id']
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+        ordering = ['id']
+
+    def __str__(self) -> str:
+        return self.name

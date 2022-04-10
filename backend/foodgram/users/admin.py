@@ -1,27 +1,13 @@
 from django.contrib import admin
-from django.contrib.auth import get_user_model
 
-CustomUser = get_user_model()
+from .models import User
 
 
-@admin.register(CustomUser)
+@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'username',
-        'email',
-        'role',
-    )
-    search_fields = (
-        'email',
-        'username',
-    )
-    list_filter = (
-        'email',
-        'username',
-    )
-    list_editable = (
-        'username',
-        'email',
-    )
-
+    list_display = ('id', 'username', 'first_name',
+                    'last_name', 'email', 'is_staff')
+    list_editable = ('username', 'first_name',
+                     'last_name', 'email', 'is_staff')
+    search_fields = ('username', 'email', 'is_staff')
+    list_filter = ('email', 'username')
