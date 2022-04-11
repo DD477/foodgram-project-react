@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from recipes.models import Subscription
+from recipes.models import Subscription, Tag, Ingredient, Recipe, AmountIngredientForRecipe
 from users.models import User
 
 
@@ -52,3 +52,45 @@ class GetTokenSerializer(serializers.Serializer):
     email = serializers.CharField(
         required=True
     )
+
+
+class TagSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ('id', 'name', 'color', 'slug',)
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
+
+# class AmountIngredientForRecipeSerializers(serializers.ModelSerializer):
+#     id = serializers.ReadOnlyField(source='ingredient.id')
+#     name = serializers.ReadOnlyField(source='ingredient.name')
+#     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+
+#     class Meta:
+#         model = AmountIngredientForRecipe
+#         fields = ('id', 'name', 'measurement_unit', 'amount')
+
+class RecipeSerializer(serializers.ModelSerializer):
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+    tags = TagSerializers(read_only=True, many=True)
+    author = UserSerializer(read_only=True)
+    ingredients = IngredientSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
+                  'is_in_shopping_cart', 'name', 'image', 'text',
+                  'cooking_time')
+
+    def get_is_favorited(self, obj):
+        if self.context['request'].user.is_anonymous:
+            return False
+
+    def get_is_in_shopping_cart(self, obj):
+        if self.context['request'].user.is_anonymous:
+            return False

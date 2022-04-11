@@ -130,6 +130,25 @@ class Ingredient(models.Model):
         return self.name + ', ' + self.measurement_unit
 
 
+class AmountIngredientForRecipe(models.Model):
+    amount = models.IntegerField(
+        verbose_name='Количество ингредиента'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='amount2recipe',
+        verbose_name='Id рецепта'
+    )
+
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='amount2ingredient',
+        verbose_name='Id ингредиента'
+    )
+
+
 class Tag(models.Model):
     name = models.CharField(
         verbose_name='Название тега',
