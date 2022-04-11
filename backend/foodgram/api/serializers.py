@@ -3,6 +3,10 @@ from rest_framework import serializers
 from recipes.models import Subscription, Tag, Ingredient, Recipe, AmountIngredientForRecipe
 from users.models import User
 
+import base64
+
+from django.core.files.base import ContentFile
+
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -65,27 +69,64 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
-# class AmountIngredientForRecipeSerializers(serializers.ModelSerializer):
-#     id = serializers.ReadOnlyField(source='ingredient.id')
-#     name = serializers.ReadOnlyField(source='ingredient.name')
-#     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
 
-#     class Meta:
-#         model = AmountIngredientForRecipe
-#         fields = ('id', 'name', 'measurement_unit', 'amount')
+class AmountIngredientForRecipeSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit')
 
-class RecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AmountIngredientForRecipe
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+# class Base64ImageField(serializers.ImageField):
+#     def from_native(self, data):
+#         if isinstance(data, basestring) and data.startswith('data:image'):
+#             # base64 encoded image - decode
+#             format, imgstr = data.split(';base64,')  # format ~= data:image/X,
+#             ext = format.split('/')[-1]  # guess file extension
+
+#             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+#         return super(Base64ImageField, self).from_native(data)
+
+
+# class Base64ImageField(serializers.Field):
+#     def to_representation(self, value):
+#         return value
+
+#     def to_internal_value(self, data):
+#         try:
+#             format, imgstr = data.split(';base64,')
+#             ext = format.split('/')[-1]
+#             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+#             print('===========')
+#             print('format = ', format)
+#             print('imgstr = ', imgstr)
+#             print('ext = ', ext)
+#             print('data = ', data)
+#             print('===========')
+
+#         except ValueError:
+#             raise serializers.ValidationError('Ошибка!!!')
+#         return data
+
+
+class RecipeListRetriveSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    tags = TagSerializers(read_only=True, many=True)
     author = UserSerializer(read_only=True)
-    ingredients = IngredientSerializer(read_only=True, many=True)
+    ingredient = AmountIngredientForRecipeSerializer(
+        source="amountingredientforrecipe", many=True)
+    # image = Base64ImageField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
-                  'is_in_shopping_cart', 'name', 'image', 'text',
-                  'cooking_time')
+        depth = 1
+        fields = '__all__'
 
     def get_is_favorited(self, obj):
         if self.context['request'].user.is_anonymous:
@@ -94,3 +135,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         if self.context['request'].user.is_anonymous:
             return False
+
+class RecipewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = '__all__'

@@ -10,7 +10,8 @@ from users.models import User
 from recipes.models import Tag, Ingredient, Recipe
 from .serializers import (GetTokenSerializer, UserSerializer,
                           UserSetPasswordSerializer, TagSerializers,
-                          IngredientSerializer, RecipeSerializer
+                          IngredientSerializer, RecipeListRetriveSerializer,
+                          RecipewSerializer
                           )
 
 
@@ -84,6 +85,12 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
 
+
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    serializer_class = RecipeListRetriveSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'list' or 'retrive':
+            return RecipeListRetriveSerializer
+        return RecipewSerializer
