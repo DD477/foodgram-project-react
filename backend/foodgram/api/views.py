@@ -7,12 +7,11 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
 from users.models import User
-from recipes.models import Tag, Ingredient, Recipe
 from .serializers import (GetTokenSerializer, UserSerializer,
-                          UserSetPasswordSerializer, TagSerializers,
-                          IngredientSerializer, RecipeListRetriveSerializer,
-                          RecipewSerializer
-                          )
+                          UserSetPasswordSerializer, TagSerializer,
+                          IngredientSerializer, ListRetrieveRecipeSerializer,
+                          CreateUpdateDestroyRecipeSerializer)
+from recipes.models import Tag, Ingredient, Recipe
 
 
 class ListCreateRetrieveViewSet(mixins.ListModelMixin,
@@ -78,7 +77,7 @@ def get_token(request):
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    serializer_class = TagSerializers
+    serializer_class = TagSerializer
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -88,9 +87,9 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeListRetriveSerializer
+    serializer_class = ListRetrieveRecipeSerializer
 
     def get_serializer_class(self):
-        if self.action == 'list' or 'retrive':
-            return RecipeListRetriveSerializer
-        return RecipewSerializer
+        if self.action == 'list' or self.action == 'retrieve':
+            return ListRetrieveRecipeSerializer
+        return CreateUpdateDestroyRecipeSerializer
