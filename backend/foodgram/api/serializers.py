@@ -1,3 +1,4 @@
+from dataclasses import fields
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
@@ -5,6 +6,17 @@ from drf_extra_fields.fields import Base64ImageField
 from recipes.models import (
     Subscription, Tag, Ingredient, Recipe, AmountIngredientForRecipe)
 from users.models import User
+
+
+class FromContext(object):
+    def __init__(self, value_fn):
+        self.value_fn = value_fn
+
+    def set_context(self, serializer_field):
+        self.value = self.value_fn(serializer_field.context)
+
+    def __call__(self):
+        return self.value
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -198,3 +210,39 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
         instance.cooking_time = validated_data.get('cooking_time')
         instance.save()
         return instance
+
+
+class SimpleRecipeInfo(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class SubscriptionSerializer(UserSerializer):
+    recipes_count = serializers.SerializerMethodField()
+    recipes = SimpleRecipeInfo(many=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count'
+                  )
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
+
+
+class SubscribeSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+    author = SubscriptionSerializer(
+        default=FromContext(
+            lambda context: (
+                context['request'].parser_context['kwargs']['author_id']))
+    )
+
+    class Meta:
+        model = Subscription
+        fields = ('user', 'author')
+

@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from requests import get
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.generics import get_object_or_404
@@ -10,8 +11,10 @@ from users.models import User
 from .serializers import (GetTokenSerializer, UserSerializer,
                           UserSetPasswordSerializer, TagSerializer,
                           IngredientSerializer, ListRetrieveRecipeSerializer,
-                          CreateUpdateDestroyRecipeSerializer)
-from recipes.models import Tag, Ingredient, Recipe
+                          CreateUpdateDestroyRecipeSerializer, SubscriptionSerializer,
+                          SubscribeSerializer
+                          )
+from recipes.models import Tag, Ingredient, Recipe, Subscription
 
 
 class ListCreateRetrieveViewSet(mixins.ListModelMixin,
@@ -54,6 +57,12 @@ class UserViewSet(ListCreateRetrieveViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    # @action(detail=False, methods=('get',), url_path='subscriptions')
+    # def subscriptions(self, request):
+    #     queryset = User.objects.filter(followings__user=request.user)
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
+
 
 @api_view(['POST'])
 def get_token(request):
@@ -93,3 +102,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == 'list' or self.action == 'retrieve':
             return ListRetrieveRecipeSerializer
         return CreateUpdateDestroyRecipeSerializer
+
+
+class ListViewSet(mixins.ListModelMixin,
+                  mixins.CreateModelMixin,
+                  viewsets.GenericViewSet
+                  ):
+    pass
+
+
+class SubscriptionListViewSet(ListViewSet):
+    serializer_class = SubscriptionSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(followings__user=self.request.user)
+
+
+class SubscribeViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = SubscribeSerializer
+
+    def perform_create(self, serializer):
+        author = get_object_or_404(
+            User,
+            id=self.kwargs['author_id']
+        )
+        serializer.save(user=self.request.user, author=author)
