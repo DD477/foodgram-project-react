@@ -15,9 +15,14 @@ class Migration(migrations.Migration):
             name='AmountIngredientForRecipe',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount', models.IntegerField(verbose_name='Количество ингредиента')),
-                ('ingredient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='amount2ingredient', to='recipes.ingredient', verbose_name='Id ингредиента')),
-                ('recipe', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='amount2recipe', to='recipes.recipe', verbose_name='Id рецепта')),
+                ('value', models.IntegerField(blank=True, verbose_name='Количество ингредиента')),
+                ('ingredient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='amountingredientforrecipe', to='recipes.ingredient', verbose_name='ID ингредиента')),
+                ('recipe', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='amountingredientforrecipe', to='recipes.recipe', verbose_name='ID рецепта')),
             ],
+            options={
+                'verbose_name': 'Количество ингредиента для рецепта',
+                'verbose_name_plural': 'Количество ингредиента для рецепта',
+                'ordering': ['id'],
+            },
         ),
     ]

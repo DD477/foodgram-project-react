@@ -25,7 +25,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'author', 'name', 'image', 'text', 'cooking_time')
-    filter_horizontal = ('tags', 'ingredient')
+    filter_horizontal = ('tags', 'ingredients')
     list_filter = ('author', 'name')
     list_editable = ('author', 'name', 'image', 'text', 'cooking_time')
 
@@ -35,14 +35,16 @@ class IngredientAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'measurement_unit')
     list_filter = ('name',)
     list_editable = ('name', 'measurement_unit')
+    search_fields = ('id', )
+
+
+@admin.register(AmountIngredientForRecipe)
+class AmountIngredientForRecipeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'recipe', 'ingredient', 'amount')
+    list_editable = ('recipe', 'ingredient', 'amount')
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'color', 'slug')
     list_editable = ('name', 'color', 'slug')
-
-@admin.register(AmountIngredientForRecipe)
-class AmountIngredientForRecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'recipe', 'ingredient', 'amount')
-    list_editable = ('recipe', 'ingredient', 'amount')

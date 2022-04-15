@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
-from rest_framework import mixins, status, viewsets
-from rest_framework.authtoken.models import Token
-from rest_framework.decorators import action, api_view
+from djoser.views import UserViewSet
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,26 +9,61 @@ from rest_framework.response import Response
 from recipes.models import Ingredient, Recipe, Subscription, Tag
 
 from .serializers import (CreateUpdateDestroyRecipeSerializer,
-                          GetTokenSerializer, IngredientSerializer,
-                          ListRetrieveRecipeSerializer, SubscribeSerializer,
-                          SubscriptionSerializer, TagSerializer,
-                          UserSerializer, UserSetPasswordSerializer)
-
-
-class ListCreateRetrieveViewSet(mixins.ListModelMixin,
-                                mixins.CreateModelMixin,
-                                mixins.RetrieveModelMixin,
-                                viewsets.GenericViewSet
-                                ):
-    pass
+                          IngredientSerializer, ListRetrieveRecipeSerializer,
+                          SubscriptionSerializer, TagSerializer)
 
 User = get_user_model()
-
-from djoser.views import UserViewSet
 
 
 class UserViewSet(UserViewSet):
     queryset = User.objects.all()
+
+    @action(detail=True, methods=('post',),
+            permission_classes=[IsAuthenticated])
+    def subscribe(self, request, id=None):
+        user = request.user
+        author = get_object_or_404(User, id=id)
+
+        if user == author:
+            return Response({
+                'errors': 'Вы не можете подписываться на самого себя'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if Subscription.objects.filter(user=user, author=author).exists():
+            return Response({
+                'errors': 'Вы уже подписаны на данного пользователя'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        follow = Subscription.objects.create(user=user, author=author)
+        serializer = SubscriptionSerializer(
+            follow, context={'request': request}
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @subscribe.mapping.delete
+    def unsubscribe(self, request, id=None):
+        user = request.user
+        author = get_object_or_404(User, id=id)
+        if user == author:
+            return Response({
+                'errors': 'Вы не можете отписываться от самого себя'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        follow = Subscription.objects.filter(user=user, author=author)
+        if follow.exists():
+            follow.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response({
+            'errors': 'Вы уже отписались'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=('get',), url_path='subscriptions',
+            permission_classes=[IsAuthenticated])
+    def subscriptions(self, request):
+        user = request.user
+        queryset = Subscription.objects.filter(user=user)
+        serializer = SubscriptionSerializer(
+            queryset, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -49,28 +84,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == 'list' or self.action == 'retrieve':
             return ListRetrieveRecipeSerializer
         return CreateUpdateDestroyRecipeSerializer
-
-
-class ListViewSet(mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  viewsets.GenericViewSet
-                  ):
-    pass
-
-
-class SubscriptionListViewSet(ListViewSet):
-    serializer_class = SubscriptionSerializer
-
-    def get_queryset(self):
-        return User.objects.filter(followings__user=self.request.user)
-
-
-class SubscribeViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    serializer_class = SubscribeSerializer
-
-    def perform_create(self, serializer):
-        author = get_object_or_404(
-            User,
-            id=self.kwargs['author_id']
-        )
-        serializer.save(user=self.request.user, author=author)
