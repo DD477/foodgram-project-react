@@ -1,9 +1,10 @@
-import django
+from re import I
 from django.contrib.auth import get_user_model
+from django.db.models import F, Sum
 from django.http import HttpResponse
-from djoser.views import UserViewSet
+from djoser import views as dj_views
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -19,12 +20,12 @@ from .serializers import (CreateUpdateDestroyRecipeSerializer,
                           SimpleRecipeSerializer
                           )
 
+from .permissions import IsAuthorOrReadOnly
+
 User = get_user_model()
 
-
-class UserViewSet(UserViewSet):
+class UserViewSet(dj_views.UserViewSet):
     queryset = User.objects.all()
-
     @action(detail=True, methods=('post',),
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
@@ -82,7 +83,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
 
-
+@permission_classes([IsAuthorOrReadOnly])
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
 
@@ -112,36 +113,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=('get',),
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        user = request.user
-        cart = user.shopping_carts.all()
-        buying_list = {}
-        for item in cart:
-            recipe = item.recipe
-            print(item.recipe.amountingredientforrecipe.all())
-            ingredients_in_recipe = item.recipe.amountingredientforrecipe.all()
-            for item in ingredients_in_recipe:
-                amount = item.amount
-                name = item.ingredient.name
-                measurement_unit = item.ingredient.measurement_unit
-                if name not in buying_list:
-                    buying_list[name] = {
-                        'amount': amount,
-                        'measurement_unit': measurement_unit
-                    }
-                else:
-                    buying_list[name]['amount'] = (
-                        buying_list[name]['amount'] + amount
-                    )
-        shopping_list = []
-        for item in buying_list:
-            shopping_list.append(
-                f'{item} - {buying_list[item]["amount"]}, '
-                f'{buying_list[item]["measurement_unit"]}\n'
+        user = self.request.user
+        if not user.shopping_carts.exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        ingredients = AmountIngredientForRecipe.objects.filter(
+            recipe__in=(user.shopping_carts.values('recipe_id'))
+        ).values(
+            ingredients=F('ingredient__name'),
+            measure=F('ingredient__measurement_unit')
+        ).annotate(amount=Sum('amount'))
+
+        filename = f'{user.username}_shopping_list.txt'
+        shopping_list = ''
+        for ing in ingredients:
+            shopping_list += (
+                f'{ing["ingredients"]}: {ing["amount"]} {ing["measure"]}\n'
             )
-        response = HttpResponse(shopping_list, 'Content-Type: text/plain')
-        response['Content-Disposition'] = (
-            'attachment;' 'filename="shopping_list.txt"'
+
+        response = HttpResponse(
+            shopping_list, content_type='text.txt; charset=utf-8'
         )
+        response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
 
     def add_obj(self, model, user, pk):
