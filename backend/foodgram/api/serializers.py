@@ -34,7 +34,7 @@ class UserSerializer(djoser_serializers.UserSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return Subscription.objects.filter(user=user, author=obj.id).exists()
+        return user.followers.filter(user=user, author=obj.id).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -221,18 +221,19 @@ class SubscriptionSerializer(UserSerializer):
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count')
 
-    def get_is_subscribed(self, obj):
-        return Subscription.objects.filter(
-            user=obj.user, author=obj.author
-        ).exists()
+    def get_is_subscribed(*args):
+        """Метод переопределен из родительского. В текущей реализации всегда
+        будет возвращать True
+        """
+        return True
 
     def get_recipes(self, obj):
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
-        queryset = Recipe.objects.filter(author=obj.author)
+        queryset = obj.author.recipes.filter(author=obj.author)
         if limit:
             queryset = queryset[:int(limit)]
         return SimpleRecipeSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj.author).count()
+        return obj.author.recipes.count()

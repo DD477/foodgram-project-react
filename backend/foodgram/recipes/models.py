@@ -13,8 +13,9 @@ class ShoppingCart(models.Model):
         related_name='shopping_carts',
         verbose_name='Чей список покупок'
     )
-    recipe = models.ManyToManyField(
+    recipe = models.ForeignKey(
         "Recipe",
+        on_delete=models.CASCADE,
         related_name='shopping_carts',
         verbose_name='ID рецепта'
     )
@@ -23,9 +24,13 @@ class ShoppingCart(models.Model):
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
         ordering = ['id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='unique_recipe_in_cart')
+        ]
 
     def __str__(self) -> str:
-        return ' / '.join(i.name for i in self.recipe.all())
+        return f'{self.user} добавил в список покупок рецепт {self.recipe}' 
 
 
 class Favorite(models.Model):
@@ -35,8 +40,9 @@ class Favorite(models.Model):
         related_name='favorites',
         verbose_name='Чей список избранного'
     )
-    recipe = models.ManyToManyField(
+    recipe = models.ForeignKey(
         "Recipe",
+        on_delete=models.CASCADE,
         related_name='favorites',
         verbose_name='ID рецепта'
     )
@@ -45,9 +51,13 @@ class Favorite(models.Model):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
         ordering = ['id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='unique_recipe_in_favorite')
+        ]
 
     def __str__(self) -> str:
-        return ' / '.join(i.name for i in self.recipe.all())
+        return f'{self.user} добавил в избранное рецепт {self.recipe}'  
 
 
 class Subscription(models.Model):
@@ -70,7 +80,7 @@ class Subscription(models.Model):
         ordering = ['id']
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'author'], name='unique_follow'),
+                fields=['user', 'author'], name='unique_subscription'),
             models.CheckConstraint(
                 check=~Q(user=F('author')), name='user_not_author')
         ]
