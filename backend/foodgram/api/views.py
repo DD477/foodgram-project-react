@@ -1,14 +1,16 @@
-from re import I
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http import HttpResponse
 from djoser import views as dj_views
 from rest_framework import status, viewsets
+from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+
+from .paginators import PageLimitPagination
 from recipes.models import (Ingredient, Recipe, Subscription,
                             Tag, Favorite, ShoppingCart,
                             AmountIngredientForRecipe
@@ -24,13 +26,18 @@ from .permissions import IsAuthorOrReadOnly
 
 User = get_user_model()
 
+
 class UserViewSet(dj_views.UserViewSet):
     queryset = User.objects.all()
+    pagination_class = PageLimitPagination
+
     @action(detail=True, methods=('post',),
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
+        authors = user.subscribe.all()
+        pages = self.paginate_queryset(authors)
 
         if user == author:
             return Response({
@@ -65,13 +72,15 @@ class UserViewSet(dj_views.UserViewSet):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=('get',), url_path='subscriptions',
-            permission_classes=[IsAuthenticated])
+            permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
         queryset = Subscription.objects.filter(user=user)
+        pagination = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(
-            queryset, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            pagination, many=True, context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -82,10 +91,14 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('^name',)
+
 
 @permission_classes([IsAuthorOrReadOnly])
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
+    pagination_class = PageLimitPagination
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action == 'retrieve':
