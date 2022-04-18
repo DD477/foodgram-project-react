@@ -9,7 +9,7 @@ EMPTY_VALUE_DISPLAY = 'Нет значения'
 
 class IngredientInline(TabularInline):
     model = AmountIngredientForRecipe
-    extra = 1
+    extra = 0
 
 
 @register(ShoppingCart)
@@ -47,13 +47,13 @@ class RecipeAdmin(ModelAdmin):
         'cooking_time', 'get_favorites_count',
     )
     readonly_fields = ('get_image',)
-    filter_horizontal = ('tags', 'ingredients',)
+    filter_horizontal = ('tags',)
     list_editable = ('author', 'name', 'cooking_time',)
     fields = (
         ('name',),
         ('author',), 
         ('cooking_time'),
-        ('tags', 'ingredients'),
+        ('tags',),
         ('text',),
         ('image',),
     )

@@ -14,7 +14,7 @@ from recipes.models import (AmountIngredientForRecipe, Favorite, Ingredient,
 
 from .filters import CustomFilter, IngredientSearchFilter
 from .paginators import PageLimitPagination
-from .permissions import IsAuthorOrReadOnly
+from .permissions import IsAuthorIsStaffOrReadOnly
 from .serializers import (CreateUpdateDestroyRecipeSerializer,
                           IngredientSerializer, ListRetrieveRecipeSerializer,
                           SimpleRecipeSerializer, SubscriptionSerializer,
@@ -89,7 +89,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ('^name',)
 
 
-@permission_classes([IsAuthorOrReadOnly])
+@permission_classes([IsAuthorIsStaffOrReadOnly])
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     pagination_class = PageLimitPagination

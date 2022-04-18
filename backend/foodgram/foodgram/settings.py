@@ -1,13 +1,18 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-5g(^(rzilh_kq8#lc=wo^9dj8rzl@k+h!&^r5v-ao)4(os3prd'
+SECRET_KEY = os.getenv('SECRET_KEY', default=8800)
+
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='*').split(', ')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -114,7 +119,7 @@ DJOSER = {
         'current_user': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        'user': ('api.permissions.IsAuthenticatedOrMeOrReadOnly',),
-        'user_list': ('api.permissions.IsAuthenticatedOrMeOrReadOnly',)
+        'user': ('api.permissions.MeOnlyForAuthenticated',),
+        'user_list': ('api.permissions.MeOnlyForAuthenticated',)
     }
 }
