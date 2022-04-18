@@ -1,29 +1,24 @@
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as dj_views
 from rest_framework import status, viewsets
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from recipes.models import (AmountIngredientForRecipe, Favorite, Ingredient,
+                            Recipe, ShoppingCart, Subscription, Tag)
 
+from .filters import CustomFilter, IngredientSearchFilter
 from .paginators import PageLimitPagination
-from recipes.models import (Ingredient, Recipe, Subscription,
-                            Tag, Favorite, ShoppingCart,
-                            AmountIngredientForRecipe
-                            )
-
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (CreateUpdateDestroyRecipeSerializer,
                           IngredientSerializer, ListRetrieveRecipeSerializer,
-                          SubscriptionSerializer, TagSerializer,
-                          SimpleRecipeSerializer
-                          )
-
-from .permissions import IsAuthorOrReadOnly
-from .filters import IngredientSearchFilter, CustomFilter
+                          SimpleRecipeSerializer, SubscriptionSerializer,
+                          TagSerializer)
 
 User = get_user_model()
 
@@ -37,8 +32,6 @@ class UserViewSet(dj_views.UserViewSet):
     def subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
-        authors = user.subscribe.all()
-        pages = self.paginate_queryset(authors)
 
         if user == author:
             return Response({

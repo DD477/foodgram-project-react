@@ -1,48 +1,95 @@
-from django.contrib import admin
+from django.contrib.admin import ModelAdmin, TabularInline, register
+from django.utils.safestring import mark_safe
 
 from .models import (AmountIngredientForRecipe, Favorite, Ingredient, Recipe,
                      ShoppingCart, Subscription, Tag)
 
-
-@admin.register(ShoppingCart)
-class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'recipe')
+EMPTY_VALUE_DISPLAY = 'Нет значения'
 
 
-@admin.register(Favorite)
-class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'recipe')
+class IngredientInline(TabularInline):
+    model = AmountIngredientForRecipe
+    extra = 1
 
 
-@admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'author')
-    list_editable = ('user', 'author')
+@register(ShoppingCart)
+class ShoppingCartAdmin(ModelAdmin):
+    list_display = ('id', 'user', 'recipe',)
+
+    empty_value_display = EMPTY_VALUE_DISPLAY
 
 
-@admin.register(Recipe)
-class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'author', 'name', 'image', 'text', 'cooking_time')
-    filter_horizontal = ('tags', 'ingredients')
-    list_filter = ('author', 'name')
-    list_editable = ('author', 'name', 'image', 'text', 'cooking_time')
+@register(Favorite)
+class FavoriteAdmin(ModelAdmin):
+    list_display = ('id', 'user', 'recipe', 'get_recipe_author',)
+    list_editable = ('user', 'recipe',)
+
+    empty_value_display = EMPTY_VALUE_DISPLAY
+
+    def get_recipe_author(self, obj):
+        return obj.recipe.author
+
+    get_recipe_author.short_description = 'Автор рецепта'
 
 
-@admin.register(Ingredient)
-class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'measurement_unit')
+@register(Subscription)
+class SubscriptionAdmin(ModelAdmin):
+    list_display = ('id', 'user', 'author',)
+    list_editable = ('user', 'author',)
+
+    empty_value_display = EMPTY_VALUE_DISPLAY
+
+
+@register(Recipe)
+class RecipeAdmin(ModelAdmin):
+    list_display = (
+        'id', 'name', 'author', 'get_image', 'text',
+        'cooking_time', 'get_favorites_count',
+    )
+    readonly_fields = ('get_image',)
+    filter_horizontal = ('tags', 'ingredients',)
+    list_editable = ('author', 'name', 'cooking_time',)
+    fields = (
+        ('name',),
+        ('author',), 
+        ('cooking_time'),
+        ('tags', 'ingredients'),
+        ('text',),
+        ('image',),
+    )
+    search_fields = (
+        'name', 'author',
+    )
+    list_filter = (
+        'author', 'name', 'tags',
+    )
+
+    inlines = (IngredientInline,)
+    save_on_top = True
+    empty_value_display = EMPTY_VALUE_DISPLAY
+
+    def get_image(self, obj):
+        return mark_safe(f'<img src={obj.image.url} width="80" hieght="30"')
+
+    def get_favorites_count(self, obj):
+        return obj.favorites.count()
+
+    get_favorites_count.short_description = 'Число добавлений в избранное'
+    get_image.short_description = 'Изображение'
+
+
+@register(Ingredient)
+class IngredientAdmin(ModelAdmin):
+    list_display = ('id', 'name', 'measurement_unit',)
     list_filter = ('name',)
-    list_editable = ('name', 'measurement_unit')
-    search_fields = ('id', )
+    search_fields = ('name',)
+
+    empty_value_display = EMPTY_VALUE_DISPLAY
 
 
-@admin.register(AmountIngredientForRecipe)
-class AmountIngredientForRecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'recipe', 'ingredient', 'amount')
-    list_editable = ('recipe', 'ingredient', 'amount')
+@register(Tag)
+class TagAdmin(ModelAdmin):
+    list_display = ('id', 'name', 'color', 'slug',)
+    list_editable = ('name', 'color', 'slug',)
 
-
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'color', 'slug')
-    list_editable = ('name', 'color', 'slug')
+    empty_value_display = EMPTY_VALUE_DISPLAY

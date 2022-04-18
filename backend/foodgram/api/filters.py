@@ -27,7 +27,7 @@ class CustomFilter(FilterSet):
         if value and not self.request.user.is_anonymous:
             return queryset.filter(shopping_carts__user=self.request.user)
         return queryset
-    
+
     class Meta:
         model = Recipe
         fields = ('tags', 'author')
