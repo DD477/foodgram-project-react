@@ -11,7 +11,6 @@ from rest_framework.response import Response
 
 from recipes.models import (AmountIngredientForRecipe, Favorite, Ingredient,
                             Recipe, ShoppingCart, Subscription, Tag)
-
 from .filters import CustomFilter, IngredientSearchFilter
 from .paginators import PageLimitPagination
 from .permissions import IsAuthorIsStaffOrReadOnly
@@ -131,13 +130,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).values(
             ingredients=F('ingredient__name'),
             measure=F('ingredient__measurement_unit')
-        ).annotate(amount=Sum('amount'))
+        ).annotate(amount_sum=Sum('amount'))
 
         filename = f'{user.username}_shopping_list.txt'
         shopping_list = ''
         for ing in ingredients:
             shopping_list += (
-                f'{ing["ingredients"]}: {ing["amount"]} {ing["measure"]}\n'
+                f'{ing["ingredients"]}: {ing["amount_sum"]} {ing["measure"]}\n'
             )
 
         response = HttpResponse(

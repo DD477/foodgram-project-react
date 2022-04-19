@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from recipes.admin import EMPTY_VALUE_DISPLAY
-
 from .models import User
 
 
@@ -17,8 +16,8 @@ class UserAdmin(admin.ModelAdmin):
         ('last_name',),
         ('last_login',),
         ('date_joined',),
-        ('is_active',), 
-        ('is_superuser',), 
+        ('is_active',),
+        ('is_superuser',),
         ('is_staff',),
         ('groups',),
         ('user_permissions',),

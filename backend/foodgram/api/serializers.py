@@ -1,10 +1,7 @@
-from time import process_time
-
 from django.contrib.auth import get_user_model
 from djoser import serializers as dj_serializers
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
 from recipes.models import AmountIngredientForRecipe, Ingredient, Recipe, Tag
 
@@ -121,9 +118,12 @@ class AmountWriteSerializer(serializers.Serializer):
 class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для добавления, изменения, удаления рецепта.
     """
-    author = UserSerializer(read_only=True)
-    ingredients = AmountWriteSerializer(many=True)
-    tags = serializers.ListField()
+    author = UserSerializer(
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
+    ingredients = AmountWriteSerializer(many=True, read_only=True)
+    tags = serializers.ListField(read_only=True)
     image = Base64ImageField()
     name = serializers.CharField(max_length=200)
     text = serializers.CharField()
@@ -133,11 +133,51 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients',
                   'name', 'image', 'text', 'cooking_time',)
-        read_only_fields = ('tags', 'author', 'ingredients',)
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Recipe.objects.all(),
+                fields=('author', 'name'),
+                message='Вы уже добавили рецет с таким названием'
+            )
+        ]
 
     def to_representation(self, instance):
         return ListRetrieveRecipeSerializer(instance,
                                             context=self.context).data
+
+    def validate(self, data):
+        ingredients = self.initial_data.get('ingredients')
+        if not ingredients:
+            raise serializers.ValidationError({
+                'ingredients': ('Выберите ингредиенты')
+            })
+        for ingredients_item in ingredients:
+            if int(ingredients_item['amount']) < 0:
+                raise serializers.ValidationError({
+                    'ingredients': ('Минимальное количество ингредиентов 1')
+                })
+            if int(ingredients_item['amount']) > 1000:
+                raise serializers.ValidationError({
+                    'ingredients': ('Слишком много')
+                })
+
+        cooking_time = self.initial_data.get('cooking_time')
+        if not cooking_time:
+            raise serializers.ValidationError({
+                'cooking_time': ('Введите время готовки')
+            })
+        if int(cooking_time) < 0:
+            raise serializers.ValidationError({
+                'cooking_time': ('Минимальное время приготовления 1 минута')
+            })
+        if int(cooking_time) > (24 * 60):
+            raise serializers.ValidationError({
+                'cooking_time': ('Слишком долго')
+            })
+
+        data['ingredients'] = ingredients
+        data['cooking_time'] = cooking_time
+        return data
 
     def create_amount_ingredient_for_recipe(self, recipe, ingredients):
         """Записывает ингредиенты вложенные в рецепт.
@@ -154,7 +194,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
         """Создает рецепт.
         """
         user = self.context['request'].user
-        tags_data = validated_data.pop('tags')
+        tags_data = self.initial_data.get('tags')
         ingredients_data = validated_data.pop('ingredients')
 
         recipe = Recipe.objects.create(author=user, **validated_data)
@@ -165,15 +205,8 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
     def update(self, recipe, validated_data):
         """Обновляет рецепт.
         """
-        ingredients_data = validated_data.get('ingredients')
-        tags = validated_data.get('tags')
-
-        recipe.image = validated_data.get('image', recipe.image)
-        recipe.name = validated_data.get('name', recipe.name)
-        recipe.text = validated_data.get('text', recipe.text)
-        recipe.cooking_time = validated_data.get(
-            'cooking_time', recipe.cooking_time
-        )
+        ingredients_data = validated_data.pop('ingredients')
+        tags = self.initial_data.get('tags')
 
         if tags:
             recipe.tags.clear()
@@ -184,7 +217,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
             self.create_amount_ingredient_for_recipe(recipe, ingredients_data)
 
         recipe.save()
-        return recipe
+        return super().update(recipe, validated_data)
 
 
 class SimpleRecipeSerializer(serializers.ModelSerializer):

@@ -122,7 +122,7 @@ class Recipe(models.Model):
             MinValueValidator(
                 1, message='Минимальное время приготовления 1 минута'),
             MaxValueValidator(
-                (60 * 24), 'Слишком долго!'
+                (60 * 24), 'Слишком долго'
             )
         ),
         verbose_name='Время приготовления'
@@ -132,6 +132,10 @@ class Recipe(models.Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ['id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'name' ], name='unique_recipe'),
+        ]
 
     def __str__(self):
         return self.name
