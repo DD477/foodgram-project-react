@@ -122,8 +122,8 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
-    ingredients = AmountWriteSerializer(many=True, read_only=True)
-    tags = serializers.ListField(read_only=True)
+    ingredients = AmountWriteSerializer(many=True)
+    tags = serializers.ListField()
     image = Base64ImageField()
     name = serializers.CharField(max_length=200)
     text = serializers.CharField()
@@ -146,7 +146,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
                                             context=self.context).data
 
     def validate(self, data):
-        ingredients = self.initial_data.get('ingredients')
+        ingredients = data.get('ingredients')
         if not ingredients:
             raise serializers.ValidationError({
                 'ingredients': ('Выберите ингредиенты')
@@ -161,7 +161,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
                     'ingredients': ('Слишком много')
                 })
 
-        cooking_time = self.initial_data.get('cooking_time')
+        cooking_time = data.get('cooking_time')
         if not cooking_time:
             raise serializers.ValidationError({
                 'cooking_time': ('Введите время готовки')
@@ -194,7 +194,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
         """Создает рецепт.
         """
         user = self.context['request'].user
-        tags_data = self.initial_data.get('tags')
+        tags_data = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
 
         recipe = Recipe.objects.create(author=user, **validated_data)
@@ -206,7 +206,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
         """Обновляет рецепт.
         """
         ingredients_data = validated_data.pop('ingredients')
-        tags = self.initial_data.get('tags')
+        tags = validated_data.pop('tags')
 
         if tags:
             recipe.tags.clear()
