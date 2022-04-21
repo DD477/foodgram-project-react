@@ -1,3 +1,4 @@
+from dataclasses import field
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -21,8 +22,9 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Список покупок'
-        verbose_name_plural = 'Списки покупок'
+        db_table = 'shopping_carts'
+        verbose_name = 'cписок покупок'
+        verbose_name_plural = 'cписки покупок'
         ordering = ['id']
         constraints = [
             models.UniqueConstraint(
@@ -48,8 +50,9 @@ class Favorite(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Избранное'
-        verbose_name_plural = 'Избранное'
+        db_table = 'favorites'
+        verbose_name = 'избранное'
+        verbose_name_plural = 'избранное'
         ordering = ['id']
         constraints = [
             models.UniqueConstraint(
@@ -75,8 +78,9 @@ class Subscription(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Подписка'
-        verbose_name_plural = 'Подписки'
+        db_table = 'subscriptions'
+        verbose_name = 'подписка'
+        verbose_name_plural = 'подписки'
         ordering = ['id']
         constraints = [
             models.UniqueConstraint(
@@ -129,12 +133,13 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Рецепт'
-        verbose_name_plural = 'Рецепты'
+        db_table = 'recipes'
+        verbose_name = 'рецепт'
+        verbose_name_plural = 'рецепты'
         ordering = ['id']
         constraints = [
             models.UniqueConstraint(
-                fields=['author', 'name' ], name='unique_recipe'),
+                fields=['author', 'name'], name='unique_recipe'),
         ]
 
     def __str__(self):
@@ -152,8 +157,9 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Ингредиент'
-        verbose_name_plural = 'Ингредиенты'
+        db_table = 'ingredients'
+        verbose_name = 'ингредиент'
+        verbose_name_plural = 'ингредиенты'
         ordering = ['id']
         constraints = [
             models.UniqueConstraint(
@@ -189,8 +195,9 @@ class AmountIngredientForRecipe(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Количество ингредиента для рецепта'
-        verbose_name_plural = 'Количество ингредиента для рецепта'
+        db_table = 'amount_ingredient_for_recipe'
+        verbose_name = 'количество ингредиента для рецепта'
+        verbose_name_plural = 'количество ингредиента для рецепта'
         ordering = ['id']
         constraints = [
             models.UniqueConstraint(
@@ -220,8 +227,9 @@ class Tag(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Тег'
-        verbose_name_plural = 'Теги'
+        db_table = 'tags'
+        verbose_name = 'тег'
+        verbose_name_plural = 'теги'
         ordering = ['id']
 
     def __str__(self):
