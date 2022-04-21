@@ -19,12 +19,13 @@ class UserAdmin(admin.ModelAdmin):
         ('is_active',),
         ('is_superuser',),
         ('is_staff',),
+        ('subscribe',),
         ('groups',),
         ('user_permissions',),
     )
     list_editable = ('username', 'first_name',
                      'last_name', 'email', 'is_staff')
-    filter_horizontal = ('groups', 'user_permissions',)
+    filter_horizontal = ('groups', 'user_permissions', 'subscribe')
     search_fields = ('username', 'email', 'is_staff')
     list_filter = ('email', 'username')
 

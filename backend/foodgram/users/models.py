@@ -4,26 +4,31 @@ from django.db import models
 
 class User(AbstractUser):
     username = models.CharField(
-        verbose_name='Логин',
+        verbose_name='логин',
         max_length=150,
         unique=True
     )
     email = models.EmailField(
-        verbose_name='Почта',
+        verbose_name='почта',
         max_length=254,
         unique=True,
     )
     first_name = models.CharField(
-        verbose_name='Имя',
+        verbose_name='имя',
         max_length=150
     )
     last_name = models.CharField(
-        verbose_name='Фамилия',
+        verbose_name='фамилия',
         max_length=150
+    )
+    subscribe = models.ManyToManyField(
+        'self',
+        verbose_name='подписка',
+        related_name='subscribers',
+        symmetrical=False,
     )
 
     class Meta:
-        db_table = 'users'
         verbose_name = 'пользователь'
         verbose_name_plural = 'пользователи'
         ordering = ['id']

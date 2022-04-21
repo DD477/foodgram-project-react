@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.models import (AmountIngredientForRecipe, Favorite, Ingredient,
-                            Recipe, ShoppingCart, Subscription, Tag)
+                            Recipe, ShoppingCart, Tag)
 from .filters import CustomFilter, IngredientSearchFilter
 from .paginators import PageLimitPagination
 from .permissions import IsAuthorIsStaffOrReadOnly
@@ -26,25 +26,28 @@ class UserViewSet(dj_views.UserViewSet):
     queryset = User.objects.all()
     pagination_class = PageLimitPagination
 
-    @action(detail=True, methods=('post',),
-            permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=('post',), url_path='subscribe',
+            permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
 
         if user == author:
-            return Response({
-                'errors': 'Вы не можете подписываться на самого себя'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        if Subscription.objects.filter(user=user, author=author).exists():
-            return Response({
-                'errors': 'Вы уже подписаны на данного пользователя'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': 'Вы не можете подписываться на самого себя'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if user.subscribe.filter(id=author.id).exists():
+            return Response(
+                {'errors': 'Вы уже подписаны на данного пользователя'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        follow = Subscription.objects.create(user=user, author=author)
+        user.subscribe.add(author)
         serializer = SubscriptionSerializer(
-            follow, context={'request': request}
+            author, data=request.data, context={'request': request}
         )
+        serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
@@ -52,27 +55,32 @@ class UserViewSet(dj_views.UserViewSet):
         user = request.user
         author = get_object_or_404(User, id=id)
         if user == author:
-            return Response({
-                'errors': 'Вы не можете отписываться от самого себя'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        follow = Subscription.objects.filter(user=user, author=author)
-        if follow.exists():
-            follow.delete()
+            return Response(
+                {'errors': 'Вы не можете отписываться от самого себя'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if author:
+            user.subscribe.remove(author)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response({
-            'errors': 'Вы уже отписались'
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'errors': 'Вы уже отписались'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=False, methods=('get',), url_path='subscriptions',
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
-        queryset = Subscription.objects.filter(user=user)
+        queryset = user.subscribe.all()
         pagination = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(
-            pagination, many=True, context={'request': request}
+            pagination,
+            data=list(request.data),
+            many=True,
+            context={'request': request}
         )
+        serializer.is_valid(raise_exception=True)
         return self.get_paginated_response(serializer.data)
 
 

@@ -36,7 +36,7 @@ class UserSerializer(dj_serializers.UserSerializer):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return user.followers.filter(user=user, author=obj.id).exists()
+        return obj.subscribers.exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -232,19 +232,19 @@ class SimpleRecipeSerializer(serializers.ModelSerializer):
 class SubscriptionSerializer(UserSerializer):
     """Сериализатор для работы с подписками.
     """
-    email = serializers.ReadOnlyField(source='author.email')
-    id = serializers.ReadOnlyField(source='author.id')
-    username = serializers.ReadOnlyField(source='author.username')
-    first_name = serializers.ReadOnlyField(source='author.first_name')
-    last_name = serializers.ReadOnlyField(source='author.last_name')
-    is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.ReadOnlyField(
+        source='recipes.count',
+        read_only=True
+    )
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                  'is_subscribed', 'recipes', 'recipes_count')
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes', 'recipes_count'
+        )
+        read_only_fields = ('email', 'username', 'first_name', 'last_name')
 
     def get_is_subscribed(*args):
         """Метод переопределен из родительского. В текущей реализации всегда
@@ -258,7 +258,7 @@ class SubscriptionSerializer(UserSerializer):
         """
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
-        queryset = obj.author.recipes.filter(author=obj.author)
+        queryset = obj.recipes.all()
         if limit:
             queryset = queryset[:int(limit)]
         return SimpleRecipeSerializer(queryset, many=True).data

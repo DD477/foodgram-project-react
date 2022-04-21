@@ -2,7 +2,7 @@ from django.contrib.admin import ModelAdmin, TabularInline, register
 from django.utils.safestring import mark_safe
 
 from .models import (AmountIngredientForRecipe, Favorite, Ingredient, Recipe,
-                     ShoppingCart, Subscription, Tag)
+                     ShoppingCart, Tag)
 
 EMPTY_VALUE_DISPLAY = 'Нет значения'
 
@@ -32,14 +32,6 @@ class FavoriteAdmin(ModelAdmin):
     get_recipe_author.short_description = 'Автор рецепта'
 
 
-@register(Subscription)
-class SubscriptionAdmin(ModelAdmin):
-    list_display = ('id', 'user', 'author',)
-    list_editable = ('user', 'author',)
-
-    empty_value_display = EMPTY_VALUE_DISPLAY
-
-
 @register(Recipe)
 class RecipeAdmin(ModelAdmin):
     list_display = (
@@ -51,7 +43,7 @@ class RecipeAdmin(ModelAdmin):
     list_editable = ('author', 'name', 'cooking_time',)
     fields = (
         ('name',),
-        ('author',), 
+        ('author',),
         ('cooking_time'),
         ('tags',),
         ('text',),

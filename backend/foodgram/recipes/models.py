@@ -22,7 +22,6 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
-        db_table = 'shopping_carts'
         verbose_name = 'cписок покупок'
         verbose_name_plural = 'cписки покупок'
         ordering = ['id']
@@ -50,7 +49,6 @@ class Favorite(models.Model):
     )
 
     class Meta:
-        db_table = 'favorites'
         verbose_name = 'избранное'
         verbose_name_plural = 'избранное'
         ordering = ['id']
@@ -61,36 +59,6 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f'пользователь {self.user} | рецепт {self.recipe}'
-
-
-class Subscription(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='followers',
-        verbose_name='Подписчик'
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='followings',
-        verbose_name='Автор'
-    )
-
-    class Meta:
-        db_table = 'subscriptions'
-        verbose_name = 'подписка'
-        verbose_name_plural = 'подписки'
-        ordering = ['id']
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'author'], name='unique_subscription'),
-            models.CheckConstraint(
-                check=~Q(user=F('author')), name='user_not_author')
-        ]
-
-    def __str__(self):
-        return f'Подписчик {self.user.username} | Автор {self.author.username}'
 
 
 class Recipe(models.Model):
@@ -128,7 +96,6 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        db_table = 'recipes'
         verbose_name = 'рецепт'
         verbose_name_plural = 'рецепты'
         ordering = ['id']
@@ -152,7 +119,6 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        db_table = 'ingredients'
         verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
         ordering = ['id']
@@ -190,7 +156,6 @@ class AmountIngredientForRecipe(models.Model):
     )
 
     class Meta:
-        db_table = 'amount_ingredient_for_recipe'
         verbose_name = 'количество ингредиента для рецепта'
         verbose_name_plural = 'количество ингредиента для рецепта'
         ordering = ['id']
@@ -222,7 +187,6 @@ class Tag(models.Model):
     )
 
     class Meta:
-        db_table = 'tags'
         verbose_name = 'тег'
         verbose_name_plural = 'теги'
         ordering = ['id']
