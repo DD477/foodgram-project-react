@@ -37,7 +37,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           sudo rm -r foodgram/
-          sudo mkdir foodgram/
+          mkdir foodgram/
     - name: Copy files
       uses: garygrossgarten/github-action-scp@release
       with:
@@ -110,7 +110,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd foodgram/
-            sudo touch .env
+            touch .env
             echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
             echo CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }} >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
