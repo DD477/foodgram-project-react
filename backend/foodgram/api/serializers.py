@@ -109,7 +109,7 @@ class ListRetrieveRecipeSerializer(serializers.ModelSerializer):
 
 class AmountWriteSerializer(serializers.Serializer):
     """Вспомогательный сериализатор для добавления рецептов. Для добавления
-    количества конкретного ингредиента и его количества в рецепт. 
+    количества конкретного ингредиента и его количества в рецепт.
     """
     id = serializers.IntegerField()
     amount = serializers.IntegerField()
@@ -264,7 +264,7 @@ class SubscriptionSerializer(UserSerializer):
         return SimpleRecipeSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
-        """Получает кол-во рецептов автора, 
+        """Получает кол-во рецептов автора,
         на которого подписался пользователь.
         """
         return obj.author.recipes.count()

@@ -8,14 +8,14 @@ User = get_user_model()
 
 
 class IngredientSearchFilter(SearchFilter):
-    """Стандартный поисковой фильтр, 
+    """Стандартный поисковой фильтр,
     с переназначенным параметром поиска по имени ингредиента.
     """
     search_param = 'name'
 
 
 class CustomFilter(FilterSet):
-    """Пользовательский фильтр рецептов. Фильтрует по тегам, авторам, 
+    """Пользовательский фильтр рецептов. Фильтрует по тегам, авторам,
     наличию рецета в списке избранного и в списке покупок.
     """
     tags = filters.AllValuesMultipleFilter(field_name='tags__slug')
