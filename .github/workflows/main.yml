@@ -110,7 +110,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd foodgram/
-            touch .env
+            sudo touch .env
             echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
             echo CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }} >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
