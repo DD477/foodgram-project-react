@@ -36,8 +36,8 @@ jobs:
         username: ${{ secrets.HOST_USER }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          sudo rm -rf foodgram/
-          mkdir -p foodgram/
+          sudo rm -r foodgram/
+          mkdir foodgram/
     - name: Copy files
       uses: garygrossgarten/github-action-scp@release
       with:
