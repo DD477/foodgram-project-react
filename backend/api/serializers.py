@@ -157,7 +157,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
             ingredient = get_object_or_404(Ingredient,
                                            id=unique_ingredients['id'])
             if ingredient in unique_ingredients:
-                raise serializers.ValidationError('Ингридиенты должны '
+                raise serializers.ValidationError('Ингредиенты должны '
                                                   'быть уникальными')
             unique_ingredients.append(ingredient)
             if int(ingredients_item['amount']) < 0:
