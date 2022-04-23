@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from djoser import serializers as dj_serializers
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -36,7 +37,8 @@ class UserSerializer(dj_serializers.UserSerializer):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return obj.subscribers.exists()
+        return obj.subscribers.filter(from_user_id=user,
+                                      to_user_id=obj).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -151,7 +153,14 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'ingredients': ('Выберите ингредиенты')
             })
+        unique_ingredients = []
         for ingredients_item in ingredients:
+            ingredient = get_object_or_404(Ingredient,
+                                           id=unique_ingredients['id'])
+            if ingredient in unique_ingredients:
+                raise serializers.ValidationError('Ингридиенты должны '
+                                                  'быть уникальными')
+            unique_ingredients.append(ingredient)
             if int(ingredients_item['amount']) < 0:
                 raise serializers.ValidationError({
                     'ingredients': ('Минимальное количество ингредиентов 1')
