@@ -155,7 +155,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
         unique_ingredients = []
         for ingredients_item in ingredients:
             ingredient = get_object_or_404(Ingredient,
-                                           id=unique_ingredients['id'])
+                                           id=(ingredients_item['id']))
             if ingredient in unique_ingredients:
                 raise serializers.ValidationError('Ингредиенты должны '
                                                   'быть уникальными')

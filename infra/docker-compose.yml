@@ -14,7 +14,8 @@ services:
       - ./.env
 
   backend:
-    image: 481516234242/foodgram_backend:v1.04.2022
+    # image: 481516234242/foodgram_backend:v1.04.2022
+    build: ../backend/
     restart: always
     command: >
       bash -c "python manage.py migrate &&
