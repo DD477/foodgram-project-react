@@ -37,8 +37,7 @@ class UserSerializer(dj_serializers.UserSerializer):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return obj.subscribers.filter(from_user_id=user,
-                                      to_user_id=obj).exists()
+        return obj.subscribe.filter(id=obj.id).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
