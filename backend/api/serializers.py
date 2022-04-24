@@ -1,3 +1,4 @@
+from pprint import pprint
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from djoser import serializers as dj_serializers
@@ -37,7 +38,7 @@ class UserSerializer(dj_serializers.UserSerializer):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return obj.subscribe.filter(id=obj.id).exists()
+        return user.subscribe.filter(id=obj.id).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
