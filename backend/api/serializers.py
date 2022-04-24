@@ -160,9 +160,9 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Ингредиенты должны '
                                                   'быть уникальными')
             unique_ingredients.append(ingredient)
-            if int(ingredients_item['amount']) < 0:
+            if int(ingredients_item['amount']) < 1:
                 raise serializers.ValidationError({
-                    'ingredients': ('Минимальное количество ингредиентов 1')
+                    'ingredients': ('Минимальное количество ингредиента 1')
                 })
             if int(ingredients_item['amount']) > 1000:
                 raise serializers.ValidationError({
@@ -174,7 +174,7 @@ class CreateUpdateDestroyRecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'cooking_time': ('Введите время готовки')
             })
-        if int(cooking_time) < 0:
+        if int(cooking_time) < 1:
             raise serializers.ValidationError({
                 'cooking_time': ('Минимальное время приготовления 1 минута')
             })
