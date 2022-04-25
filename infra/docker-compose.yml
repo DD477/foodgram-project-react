@@ -2,7 +2,7 @@ version: '3.3'
 services:
 
   frontend:
-    image: 481516234242/foodgram_frontend:v1.04.2022
+    image: ddmitriy477/foodgram_frontend:v1.04.2022
     volumes:
       - ../frontend/:/app/result_build/
 
@@ -14,7 +14,7 @@ services:
       - ./.env
 
   backend:
-    image: 481516234242/foodgram_backend:v1.04.2022
+    image: ddmitriy477/foodgram_backend:v1.04.2022
     restart: always
     command: >
       bash -c "python manage.py migrate &&
