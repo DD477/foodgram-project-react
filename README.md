@@ -69,19 +69,19 @@
    pip install -r ./backend/requirements.txt
    ```
    
-Запустите docker-compose
+- Запустите docker-compose
   ```sh
   #все команды docker-compose выполнять в папке с docker-compose.yaml
   docker-compose up
   ```
-Выполните миграции
+- Выполните миграции
    ```sh
    docker-compose exec web python3 manage.py makemigrations
    ```
    ```sh
    docker-compose exec web python3 manage.py migrate
    ```
-Создайте пользователя с правами администратора
+- Создайте пользователя с правами администратора
    ```sh
    docker-compose exec web python3 manage.py createsuperuser
    ```
