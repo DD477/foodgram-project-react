@@ -71,33 +71,14 @@
    
 - Запустите docker-compose
   ```sh
-  #все команды docker-compose выполнять в папке с docker-compose.yaml
   docker-compose up
   ```
-- Выполните миграции
-   ```sh
-   docker-compose exec web python3 manage.py makemigrations
-   ```
-   ```sh
-   docker-compose exec web python3 manage.py migrate
-   ```
-- Создайте пользователя с правами администратора
-   ```sh
-   docker-compose exec web python3 manage.py createsuperuser
-   ```
-   
-[К оглавлению](#оглавление) ↑
-
-## Тестовые базы данных
-В репозитории, в директории data/, подготовлены несколько файлов в формате csv с контентом. Вы можете заполнить базу данных контентом из приложенных csv-файлов. Для этого необходимо выполнить команду:
-   ```sh
-   docker-compose exec web python3 manage.py import_csv
-   ```
    
 [К оглавлению](#оглавление) ↑
 
 ## Использование
-* [Ссылка на проект](http://foodgramproject.ddns.net/)
+- После запуска контейнеров, сайт будет доступен по адресу http://localhost/
+- Спецификация API будет доступна http://localhost/api/docs/
 * [Для удобства работы с приложением, можно воспользоваться панелью администрирования по адресу /admin](http://foodgramproject.ddns.net/admin/)
 * ```sh
   Логин: admin@admin.com 
