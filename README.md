@@ -60,11 +60,11 @@ Foodgram реализован для публикации рецептов. На
    ```
 Обновите менеджер пакетов (pip)
    ```sh
-   pip3 install --upgrade pip
+   pip install --upgrade pip
    ```
 Установите необходимые зависимости
    ```sh
-   pip3 install -r backend/requirements.txt
+   pip install -r backend/requirements.txt
    ```
    
 Запустите docker-compose
