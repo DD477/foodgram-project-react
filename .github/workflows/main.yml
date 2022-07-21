@@ -22,6 +22,7 @@ jobs:
       run: |
         python -m flake8
 
+# Настройки для деплоя на сервер
   # copy_infra_to_server:
   #   if: github.ref == 'refs/heads/master'
   #   name: Copy docker-compose.yml and nginx.conf
@@ -91,6 +92,7 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:v1.04.2022
 
+# Настройки для деплоя на сервер
   # deploy:
   #   runs-on: ubuntu-latest
   #   needs: [
@@ -126,6 +128,7 @@ jobs:
 
   send_message:
     runs-on: ubuntu-latest
+    # Настройки для деплоя на сервер
     # needs: deploy
     needs: [
       build_and_push_backend_to_docker_hub,
