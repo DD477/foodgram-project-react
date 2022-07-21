@@ -21,10 +21,8 @@
 
 * [Использованные технологии](#использованные-технологии)
 * [Необходимый софт](#необходимый-софт)
-* [Установка](#установка)
-* [Тестовые базы данных](#тестовые-базы-данных)
+* [Как запустить проект](#как-запустить-проект)
 * [Использование](#использование)
-* [Системные требования](#системные-требования)
 
 
 ## Использованные технологии
@@ -41,8 +39,9 @@
 [К оглавлению](#оглавление) ↑
 
 ## Необходимый софт
-Для развертывания проекта локально, на Вашем комьютере требуется Python версии 3.8.10 и выше. <br>
-Скачать дистрибутив для Вашей ОС можно на официальном сайте: https://www.python.org/downloads/
+- [Python](https://www.python.org/) 3.8.10 или выше
+- [Docker](https://www.docker.com/) 4.10.1
+- [Docker Compose](https://docs.docker.com/compose/) 3.9
 
 ## Как запустить проект:
 - Клонировать репозиторий 
@@ -68,7 +67,19 @@
    ```sh
    pip install -r ./backend/requirements.txt
    ```
-   
+- В папке `infra` создать файл `.env` - в нем будут храниться переменные окружения для проекта. Пример содержимого ниже:
+
+  ```sh
+  SECRET_KEY=SECRET_KEY
+  DB_ENGINE=django.db.backends.postgresql
+  POSTGRES_DB=postgres
+  POSTGRES_USER=postgres
+  POSTGRES_PASSWORD=postgres
+  DB_HOST=db
+  DB_PORT=5432
+  PGADMIN_DEFAULT_EMAIL=admin@admin.ru
+  PGADMIN_DEFAULT_PASSWORD=admin
+  ```
 - Запустите docker-compose
   ```sh
   docker-compose up
@@ -81,17 +92,9 @@
 - Спецификация API будет доступна http://localhost/api/docs/
 * [Для удобства работы с приложением, можно воспользоваться панелью администрирования по адресу /admin](http://foodgramproject.ddns.net/admin/)
 * ```sh
-  Логин: admin@admin.com 
+  Логин: admin
   Пароль: admin
   ```
-
-[К оглавлению](#оглавление) ↑
-
-### Системные требования:
-- [Python](https://www.python.org/) 3.10.4
-- [PostgreSQL](https://www.postgresql.org/) 13
-- [Docker](https://www.docker.com/) 4.10.1
-- [Docker Compose](https://docs.docker.com/compose/) 3.9
 
 [К оглавлению](#оглавление) ↑
 
