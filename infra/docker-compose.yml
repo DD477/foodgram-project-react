@@ -14,7 +14,7 @@ services:
       - ./.env
 
   backend:
-    image: ddmitriy477/foodgram_backend:v1.04.2022
+    image: ddmitriy477/foodgram_backend:v1.07.2022
     restart: always
     command: >
       bash -c "python manage.py migrate &&
@@ -31,13 +31,13 @@ services:
       - ./.env
 
   nginx:
-    image: nginx:1.19.3
+    image: nginx:1.21.6
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
-      - ./docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
+      - ../docs/:/usr/share/nginx/html/api/docs/
       - static_value:/var/html/static/
       - media_value:/var/html/media/
     depends_on:
